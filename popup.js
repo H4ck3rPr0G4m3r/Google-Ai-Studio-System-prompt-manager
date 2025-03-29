@@ -219,15 +219,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isAIStudio) {
           showStatus("Opening AI Studio...");
           
-          // Store the prompt to inject in Chrome storage so the content script can retrieve it
-          chrome.storage.local.set({ 'pendingPromptToInject': prompt }, function() {
-            console.log("Stored pending prompt for injection:", prompt);
-            
-            // Create a new tab with AI Studio
-            chrome.tabs.create({ url: "https://aistudio.google.com/" }, (newTab) => {
-              // Close the popup (optional, as the new tab will shift focus anyway)
-              window.close();
-            });
+          // Create a new tab with AI Studio
+          chrome.tabs.create({ url: "https://aistudio.google.com/" }, (newTab) => {
+            // Close the popup (optional, as the new tab will shift focus anyway)
+            window.close();
           });
           return;
         }
