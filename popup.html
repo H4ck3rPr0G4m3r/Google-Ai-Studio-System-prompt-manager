@@ -6,7 +6,14 @@
     body {
       font-family: sans-serif;
       min-width: 300px;
+      padding: 0;
+      margin: 0;
+    }
+    .popup-container {
       padding: 10px;
+      padding-top: 15px; /* 5px more padding at the top to push content down */
+      border-radius: 8px;
+      overflow: hidden;
     }
     ul {
       list-style: none;
@@ -92,35 +99,37 @@
   </style>
 </head>
 <body>
-  <h3>AI Studio System Prompts</h3>
-  <ul id="prompt-list">
-    <!-- Prompts will be added here by JavaScript -->
-  </ul>
-  <div id="status"></div>
-  
-  <button id="toggle-add-form" class="collapsible">+ Add New Prompt</button>
-  <div id="add-form" class="form-content">
-    <div class="form-group">
-      <label for="prompt-name">Name:</label>
-      <input type="text" id="prompt-name" placeholder="E.g., Professional Writer" />
+  <div class="popup-container">
+    <h3>AI Studio System Prompts</h3>
+    <ul id="prompt-list">
+      <!-- Prompts will be added here by JavaScript -->
+    </ul>
+    <div id="status"></div>
+    
+    <button id="toggle-add-form" class="collapsible">+ Add New Prompt</button>
+    <div id="add-form" class="form-content">
+      <div class="form-group">
+        <label for="prompt-name">Name:</label>
+        <input type="text" id="prompt-name" placeholder="E.g., Professional Writer" />
+      </div>
+      <div class="form-group">
+        <label for="prompt-text">System Prompt:</label>
+        <textarea id="prompt-text" placeholder="E.g., You are an expert writer with a professional tone..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="prompt-temperature">Temperature (0.0 - 2.0):</label>
+        <input type="number" id="prompt-temperature" min="0" max="2" step="0.1" value="0.7" />
+      </div>
+      <div class="form-actions">
+        <button id="add-prompt">Save Prompt</button>
+        <button id="cancel-add">Cancel</button>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="prompt-text">System Prompt:</label>
-      <textarea id="prompt-text" placeholder="E.g., You are an expert writer with a professional tone..."></textarea>
+    
+    <div class="divider"></div>
+    <div id="reload-container" style="text-align: center;">
+      <button id="refresh-connection" style="padding: 6px 12px;">Refresh Connection</button>
     </div>
-    <div class="form-group">
-      <label for="prompt-temperature">Temperature (0.0 - 2.0):</label>
-      <input type="number" id="prompt-temperature" min="0" max="2" step="0.1" value="0.7" />
-    </div>
-    <div class="form-actions">
-      <button id="add-prompt">Save Prompt</button>
-      <button id="cancel-add">Cancel</button>
-    </div>
-  </div>
-  
-  <div class="divider"></div>
-  <div id="reload-container" style="text-align: center;">
-    <button id="refresh-connection" style="padding: 6px 12px;">Refresh Connection</button>
   </div>
   
   <script src="popup.js"></script>
