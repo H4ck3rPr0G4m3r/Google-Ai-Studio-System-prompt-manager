@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // Default prompt to use when no prompts exist
     const defaultPrompt = { 
-      id: 'default-' + Date.now(), 
+      id: 'default-prompt', 
       name: "Default Assistant", 
       text: "You are a helpful and friendly assistant.", 
       temperature: 0.7 
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleAddFormBtn.textContent = '+ Add New Prompt';
       } else {
         addForm.style.display = 'block';
-        toggleAddFormBtn.textContent = '− Hide Form';
+        toggleAddFormBtn.textContent = '- Hide Form';
         nameInput.focus();
       }
     });
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       const deleteButton = document.createElement('button');
-      deleteButton.textContent = '✕';
+      deleteButton.textContent = 'X';  // Using plain 'X' instead of Unicode character
       deleteButton.title = 'Delete prompt';
       deleteButton.addEventListener('click', function() {
         if (confirm(`Are you sure you want to delete "${prompt.name}"?`)) {
@@ -272,6 +272,11 @@ document.addEventListener('DOMContentLoaded', function() {
       if (savePrompts(prompts)) {
         showStatus('Prompt deleted successfully');
         loadPrompts(); // Refresh list
+        
+        // Show message if all prompts are deleted
+        if (prompts.length === 0) {
+          showStatus('All prompts deleted. Add a new prompt or refresh to restore default.');
+        }
       } else {
         showStatus('Failed to delete prompt', true);
       }
@@ -285,8 +290,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get prompts from storage
       let prompts = getPrompts();
       
-      // If no prompts exist, add the default prompt
-      if (prompts.length === 0) {
+      // If no prompts exist, add the default prompt but only on initial load
+      if (prompts.length === 0 && !localStorage.getItem('defaultDeleted')) {
         prompts = [defaultPrompt];
         savePrompts(prompts);
       }
@@ -296,6 +301,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const listItem = createPromptListItem(prompt);
         promptList.appendChild(listItem);
       });
+      
+      // If there are no prompts, show a message
+      if (prompts.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.textContent = 'No prompts available. Add a new one to get started.';
+        emptyMsg.style.textAlign = 'center';
+        emptyMsg.style.color = '#666';
+        emptyMsg.style.padding = '20px 0';
+        promptList.appendChild(emptyMsg);
+      }
     }
     
     // Initial load of prompts
