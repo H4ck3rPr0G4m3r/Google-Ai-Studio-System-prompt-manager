@@ -56,6 +56,28 @@ document.addEventListener('DOMContentLoaded', function() {
       temperatureInput.value = '0.7';
     });
 
+    // Function to save prompts to localStorage
+    function savePrompts(prompts) {
+      try {
+        localStorage.setItem('aiStudioPrompts', JSON.stringify(prompts));
+        return true;
+      } catch (error) {
+        console.error('Error saving prompts to localStorage:', error);
+        return false;
+      }
+    }
+
+    // Function to get prompts from localStorage
+    function getPrompts() {
+      try {
+        const promptsJson = localStorage.getItem('aiStudioPrompts');
+        return promptsJson ? JSON.parse(promptsJson) : [];
+      } catch (error) {
+        console.error('Error reading prompts from localStorage:', error);
+        return [];
+      }
+    }
+
     // Add new prompt
     addPromptBtn.addEventListener('click', function() {
       const name = nameInput.value.trim();
@@ -88,25 +110,26 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       
       // Add to storage
-      chrome.storage.sync.get(['prompts'], function(result) {
-        const prompts = result.prompts || [];
-        prompts.push(newPrompt);
-        chrome.storage.sync.set({ prompts }, function() {
-          // Reset form
-          nameInput.value = '';
-          textInput.value = '';
-          temperatureInput.value = '0.7';
-          
-          // Hide form
-          addForm.style.display = 'none';
-          toggleAddFormBtn.textContent = '+ Add New Prompt';
-          
-          showStatus('Prompt added successfully');
-          
-          // Refresh prompt list
-          loadPrompts();
-        });
-      });
+      const prompts = getPrompts();
+      prompts.push(newPrompt);
+      
+      if (savePrompts(prompts)) {
+        // Reset form
+        nameInput.value = '';
+        textInput.value = '';
+        temperatureInput.value = '0.7';
+        
+        // Hide form
+        addForm.style.display = 'none';
+        toggleAddFormBtn.textContent = '+ Add New Prompt';
+        
+        showStatus('Prompt added successfully');
+        
+        // Refresh prompt list
+        loadPrompts();
+      } else {
+        showStatus('Failed to save prompt', true);
+      }
     });
 
     // Check if tab is on AI Studio and content script is ready
@@ -243,15 +266,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to delete a prompt
     function deletePrompt(id) {
-      chrome.storage.sync.get(['prompts'], function(result) {
-        let prompts = result.prompts || [];
-        prompts = prompts.filter(prompt => prompt.id !== id);
-        
-        chrome.storage.sync.set({ prompts }, function() {
-          showStatus('Prompt deleted successfully');
-          loadPrompts(); // Refresh list
-        });
-      });
+      let prompts = getPrompts();
+      prompts = prompts.filter(prompt => prompt.id !== id);
+      
+      if (savePrompts(prompts)) {
+        showStatus('Prompt deleted successfully');
+        loadPrompts(); // Refresh list
+      } else {
+        showStatus('Failed to delete prompt', true);
+      }
     }
 
     // Function to load and display prompts
@@ -260,20 +283,18 @@ document.addEventListener('DOMContentLoaded', function() {
       promptList.innerHTML = '';
       
       // Get prompts from storage
-      chrome.storage.sync.get(['prompts'], function(result) {
-        let prompts = result.prompts || [];
-        
-        // If no prompts exist, add the default prompt
-        if (prompts.length === 0) {
-          prompts = [defaultPrompt];
-          chrome.storage.sync.set({ prompts });
-        }
-        
-        // Add each prompt to the list
-        prompts.forEach(prompt => {
-          const listItem = createPromptListItem(prompt);
-          promptList.appendChild(listItem);
-        });
+      let prompts = getPrompts();
+      
+      // If no prompts exist, add the default prompt
+      if (prompts.length === 0) {
+        prompts = [defaultPrompt];
+        savePrompts(prompts);
+      }
+      
+      // Add each prompt to the list
+      prompts.forEach(prompt => {
+        const listItem = createPromptListItem(prompt);
+        promptList.appendChild(listItem);
       });
     }
     
