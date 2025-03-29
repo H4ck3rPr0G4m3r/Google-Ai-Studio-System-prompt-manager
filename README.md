@@ -24,13 +24,6 @@ This extension is perfect for AI developers, content creators, and anyone who re
 
 ## Installation
 
-### From Chrome Web Store (Recommended)
-*Note: Once published to the Chrome Web Store, update these instructions*
-
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore) and search for "AI Studio Prompter"
-2. Click "Add to Chrome" 
-3. Confirm the installation when prompted
-
 ### Manual Installation (Developer Mode)
 
 1. Download or clone this repository to your local machine
@@ -38,6 +31,8 @@ This extension is perfect for AI developers, content creators, and anyone who re
 3. Enable "Developer mode" using the toggle in the top right corner
 4. Click "Load unpacked" and select the directory containing the extension files
 5. The extension icon should now appear in your Chrome toolbar
+
+*Note: It will not be available on the Chrome web store, sadly.*
 
 ## Usage
 
