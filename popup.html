@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Studio Prompts</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      min-width: 250px; /* Prevent popup from being too small */
+      padding: 10px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      display: flex; /* Arrange text and button */
+      justify-content: space-between; /* Space them out */
+      align-items: center; /* Vertically align */
+    }
+    li span {
+      margin-right: 10px; /* Space between text and button */
+      white-space: pre-wrap; /* Allow line breaks in prompts */
+      word-break: break-word; /* Break long words */
+      flex-grow: 1; /* Allow text to take available space */
+    }
+    button {
+      padding: 4px 8px;
+      cursor: pointer;
+      flex-shrink: 0; /* Prevent button from shrinking */
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: green; /* Default to green for success */
+      min-height: 1.2em; /* Reserve space */
+      font-weight: bold;
+    }
+    #status.error { /* Style for errors */
+        color: red;
+    }
+  </style>
+</head>
+<body>
+  <h3>Inject System Prompt</h3>
+  <ul id="prompt-list">
+    <!-- Prompts will be added here by JavaScript -->
+  </ul>
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
