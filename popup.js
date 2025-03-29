@@ -204,72 +204,99 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to inject a prompt
     async function injectPrompt(prompt) {
-      // Find the active tab in the current window
-      chrome.tabs.query({ active: true, currentWindow: true }, async function(tabs) {
-        const activeTab = tabs[0];
-        if (!activeTab || !activeTab.id) {
-          showStatus("Error: Cannot find active tab.", true);
+      try {
+        if (!chrome || !chrome.tabs || typeof chrome.tabs.query !== 'function') {
+          showStatus("Chrome extension API not available", true);
+          console.log("Chrome tabs API not available yet");
           return;
         }
-
-        // Check if we're on AI Studio
-        const isAIStudio = activeTab.url && activeTab.url.startsWith("https://aistudio.google.com/");
         
-        // If not on AI Studio, open a new tab and redirect to AI Studio
-        if (!isAIStudio) {
-          showStatus("Opening AI Studio...");
-          
-          // Create a new tab with AI Studio
-          chrome.tabs.create({ url: "https://aistudio.google.com/" }, (newTab) => {
-            // Close the popup (optional, as the new tab will shift focus anyway)
-            window.close();
-          });
-          return;
-        }
-
-        // Show loading status
-        showStatus("Checking connection...");
-        
-        // Check if content script is already available
-        const isContentScriptReady = await checkContentScriptAvailability(activeTab.id);
-        
-        if (!isContentScriptReady) {
-          showStatus("Injecting content script...");
-          // Try to inject the content script manually
-          const injectionResult = await injectContentScriptManually(activeTab.id, activeTab.url);
-          
-          if (!injectionResult.success) {
-            showStatus(injectionResult.message || "Failed to prepare injection", true);
-            return;
-          }
-          
-          // Give the content script a moment to initialize
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
-        // Now attempt to send the message
-        showStatus("Sending prompt...");
-        chrome.tabs.sendMessage(
-          activeTab.id,
-          {
-            type: "INJECT_PROMPT",
-            text: prompt.text,
-            temperature: prompt.temperature
-          },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              console.error("Error sending message:", chrome.runtime.lastError.message);
-              showStatus("Connection error. Try refreshing the page.", true);
-            } else if (response && response.status === "success") {
-              showStatus(`Injected: "${prompt.name}" (Temp: ${prompt.temperature})`);
-            } else if (response && response.status === "error") {
-              showStatus(response.message || "Injection failed: Element not found?", true);
-            } else {
-              showStatus("Injection status unknown.", true);
+        // Find the active tab in the current window
+        chrome.tabs.query({ active: true, currentWindow: true }, async function(tabs) {
+          try {
+            if (!tabs || !tabs.length) {
+              showStatus("Error: Cannot find active tab.", true);
+              return;
             }
+            
+            const activeTab = tabs[0];
+            if (!activeTab || !activeTab.id) {
+              showStatus("Error: Cannot find active tab.", true);
+              return;
+            }
+
+            // Check if we're on AI Studio
+            const isAIStudio = activeTab.url && activeTab.url.startsWith("https://aistudio.google.com/");
+            
+            // If not on AI Studio, open a new tab and redirect to AI Studio
+            if (!isAIStudio) {
+              showStatus("Opening AI Studio...");
+              
+              // Create a new tab with AI Studio
+              chrome.tabs.create({ url: "https://aistudio.google.com/" }, (newTab) => {
+                // Close the popup (optional, as the new tab will shift focus anyway)
+                window.close();
+              });
+              return;
+            }
+
+            // Show loading status
+            showStatus("Checking connection...");
+            
+            // Check if content script is already available
+            const isContentScriptReady = await checkContentScriptAvailability(activeTab.id);
+            
+            if (!isContentScriptReady) {
+              showStatus("Injecting content script...");
+              // Try to inject the content script manually
+              const injectionResult = await injectContentScriptManually(activeTab.id, activeTab.url);
+              
+              if (!injectionResult.success) {
+                showStatus(injectionResult.message || "Failed to prepare injection", true);
+                return;
+              }
+              
+              // Give the content script a moment to initialize
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            // Now attempt to send the message
+            showStatus("Sending prompt...");
+            
+            if (!chrome.tabs || typeof chrome.tabs.sendMessage !== 'function') {
+              showStatus("Chrome extension API not available for sending messages", true);
+              return;
+            }
+            
+            chrome.tabs.sendMessage(
+              activeTab.id,
+              {
+                type: "INJECT_PROMPT",
+                text: prompt.text,
+                temperature: prompt.temperature
+              },
+              (response) => {
+                if (chrome.runtime.lastError) {
+                  console.error("Error sending message:", chrome.runtime.lastError.message);
+                  showStatus("Connection error. Try refreshing the page.", true);
+                } else if (response && response.status === "success") {
+                  showStatus(`Injected: "${prompt.name}" (Temp: ${prompt.temperature})`);
+                } else if (response && response.status === "error") {
+                  showStatus(response.message || "Injection failed: Element not found?", true);
+                } else {
+                  showStatus("Injection status unknown.", true);
+                }
+              }
+            );
+          } catch (error) {
+            console.error("Error in tab query callback:", error);
+            showStatus("An error occurred while processing the tab", true);
           }
-        );
-      });
+        });
+      } catch (error) {
+        console.error("Error in injectPrompt:", error);
+        showStatus("An unexpected error occurred", true);
+      }
     }
 
     // Function to delete a prompt
@@ -326,26 +353,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up refresh connection button
     document.getElementById('refresh-connection').addEventListener('click', async () => {
-      chrome.tabs.query({ active: true, currentWindow: true }, async function(tabs) {
-        const activeTab = tabs[0];
-        if (!activeTab || !activeTab.id) {
-          showStatus("Error: Cannot find active tab.", true);
+      try {
+        if (!chrome || !chrome.tabs || typeof chrome.tabs.query !== 'function') {
+          showStatus("Chrome extension API not available", true);
+          console.log("Chrome tabs API not available yet");
           return;
         }
-
-        if (!activeTab.url || !activeTab.url.startsWith("https://aistudio.google.com/")) {
-          showStatus("Please navigate to aistudio.google.com first", true);
-          return;
-        }
-
-        showStatus("Refreshing content script...");
-        const injectionResult = await injectContentScriptManually(activeTab.id, activeTab.url);
         
-        if (injectionResult.success) {
-          showStatus("Connection refreshed successfully!");
-        } else {
-          showStatus(injectionResult.message || "Failed to refresh connection", true);
-        }
-      });
+        chrome.tabs.query({ active: true, currentWindow: true }, async function(tabs) {
+          try {
+            if (!tabs || !tabs.length) {
+              showStatus("Error: Cannot find active tab.", true);
+              return;
+            }
+            
+            const activeTab = tabs[0];
+            if (!activeTab || !activeTab.id) {
+              showStatus("Error: Cannot find active tab.", true);
+              return;
+            }
+
+            if (!activeTab.url || !activeTab.url.startsWith("https://aistudio.google.com/")) {
+              showStatus("Please navigate to aistudio.google.com first", true);
+              return;
+            }
+
+            showStatus("Refreshing content script...");
+            const injectionResult = await injectContentScriptManually(activeTab.id, activeTab.url);
+            
+            if (injectionResult.success) {
+              showStatus("Connection refreshed successfully!");
+            } else {
+              showStatus(injectionResult.message || "Failed to refresh connection", true);
+            }
+          } catch (error) {
+            console.error("Error in refresh connection callback:", error);
+            showStatus("An error occurred while refreshing connection", true);
+          }
+        });
+      } catch (error) {
+        console.error("Error in refresh connection handler:", error);
+        showStatus("An unexpected error occurred", true);
+      }
     });
   });
