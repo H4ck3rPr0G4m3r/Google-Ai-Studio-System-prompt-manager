@@ -6,6 +6,33 @@ chrome.runtime.sendMessage({ type: "CONTENT_SCRIPT_LOADED" }, (response) => {
         console.error("Failed to register content script:", chrome.runtime.lastError);
     } else {
         console.log("Content script registered with background script");
+        
+        // Check if there's a pending prompt to inject
+        chrome.storage.local.get(['pendingPromptToInject'], function(result) {
+            if (result.pendingPromptToInject) {
+                console.log("Found pending prompt to inject:", result.pendingPromptToInject);
+                
+                // Wait for the page to fully load
+                setTimeout(() => {
+                    const prompt = result.pendingPromptToInject;
+                    
+                    // Attempt to inject both the prompt text and adjust temperature if provided
+                    Promise.all([
+                        injectPromptText(prompt.text),
+                        prompt.temperature !== undefined ? adjustTemperature(prompt.temperature) : Promise.resolve(null)
+                    ])
+                    .then(([targetElement, temperatureElement]) => {
+                        console.log("Auto-injection successful:", targetElement);
+                        
+                        // Clear the pending prompt
+                        chrome.storage.local.remove(['pendingPromptToInject']);
+                    })
+                    .catch(error => {
+                        console.error("Auto-injection failed:", error);
+                    });
+                }, 2000); // Wait 2 seconds for the page to load properly
+            }
+        });
     }
 });
 
