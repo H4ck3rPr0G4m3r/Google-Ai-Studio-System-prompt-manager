@@ -5,7 +5,8 @@
     "description": "Injects system prompts into aistudio.google.com.",
     "permissions": [
       "activeTab",  
-      "scripting"   
+      "scripting",
+      "storage"   
     ],
     "host_permissions": [
       "*://aistudio.google.com/*" 
